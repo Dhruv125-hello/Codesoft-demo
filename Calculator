@@ -1,0 +1,101 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import math
+
+class ScientificCalculator:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Scientific Calculator")
+        self.root.geometry("450x600")
+        self.root.resizable(False, False)
+        self.expression = ""
+
+        self.input_text = tk.StringVar()
+
+        self.create_display()
+        self.create_buttons()
+        self.bind_keys()
+
+    def create_display(self):
+        frame = ttk.Frame(self.root, padding=10)
+        frame.pack(side=tk.TOP, fill=tk.X)
+
+        self.entry = ttk.Entry(frame, textvariable=self.input_text, font=('Helvetica', 22), justify='right')
+        self.entry.pack(fill=tk.BOTH, ipady=15)
+        self.entry.focus()
+
+    def create_buttons(self):
+        btn_frame = ttk.Frame(self.root, padding=10)
+        btn_frame.pack(expand=True, fill='both')
+
+        buttons = [
+            ["C", "⌫", "(", ")", "√"],
+            ["7", "8", "9", "/", "log"],
+            ["4", "5", "6", "*", "ln"],
+            ["1", "2", "3", "-", "sin"],
+            ["0", ".", "^", "+", "cos"],
+            ["π", "!", "exp", "tan", "="]
+        ]
+
+        for r in range(len(buttons)):
+            btn_frame.rowconfigure(r, weight=1)
+            for c in range(len(buttons[r])):
+                btn_frame.columnconfigure(c, weight=1)
+                char = buttons[r][c]
+                btn = ttk.Button(btn_frame, text=char, command=lambda ch=char: self.on_click(ch))
+                btn.grid(row=r, column=c, sticky="nsew", padx=2, pady=2, ipadx=8, ipady=12)
+
+    def on_click(self, char):
+        if char == "C":
+            self.expression = ""
+        elif char == "⌫":
+            self.expression = self.expression[:-1]
+        elif char == "=":
+            self.evaluate()
+            return
+        elif char == "π":
+            self.expression += str(math.pi)
+        elif char == "√":
+            self.expression += "math.sqrt("
+        elif char == "log":
+            self.expression += "math.log10("
+        elif char == "ln":
+            self.expression += "math.log("
+        elif char == "sin":
+            self.expression += "math.sin(math.radians("
+        elif char == "cos":
+            self.expression += "math.cos(math.radians("
+        elif char == "tan":
+            self.expression += "math.tan(math.radians("
+        elif char == "exp":
+            self.expression += "math.exp("
+        elif char == "^":
+            self.expression += "**"
+        elif char == "!":
+            self.expression += "math.factorial("
+        else:
+            self.expression += str(char)
+
+        self.input_text.set(self.expression)
+
+    def evaluate(self):
+        try:
+            result = eval(self.expression)
+            self.input_text.set(result)
+            self.expression = str(result)
+        except Exception as e:
+            messagebox.showerror("Error", "Invalid Expression")
+            self.input_text.set("")
+            self.expression = ""
+
+    def bind_keys(self):
+        self.root.bind("<Return>", lambda event: self.evaluate())
+        self.root.bind("<BackSpace>", lambda event: self.on_click("⌫"))
+        for key in "0123456789+-*/().":
+            self.root.bind(key, lambda event, char=key: self.on_click(char))
+
+# Run the app
+if __name__ == "__main__":
+    root = tk.Tk()
+    calc = ScientificCalculator(root)
+    root.mainloop()
