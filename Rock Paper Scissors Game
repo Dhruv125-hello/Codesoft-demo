@@ -2,55 +2,59 @@ import tkinter as tk
 from tkinter import ttk
 import random
 
-# Main window
+# Main Window
 root = tk.Tk()
-root.title("Rock Paper Scissors Game")
-root.geometry("400x550")
+root.title("Rock Paper Scissors - Pro Edition")
+root.geometry("450x600")
 root.resizable(False, False)
 
-# Style
-style = ttk.Style()
-style.configure("TButton", font=("Helvetica", 12), padding=10)
-style.configure("TLabel", font=("Helvetica", 12))
-
-# Game Variables
+# Game Data
 choices = ["Rock", "Paper", "Scissors"]
 player_score = 0
 computer_score = 0
 history = []
 
-# Functions
+# --- Functions ---
+def get_result(player, computer):
+    if player == computer:
+        return "Draw 🤝"
+    if (player == "Rock" and computer == "Scissors") or \
+       (player == "Paper" and computer == "Rock") or \
+       (player == "Scissors" and computer == "Paper"):
+        return "You Win 🎉"
+    return "Computer Wins 💻"
+
 def play(player_choice):
+    computer_choice = random.choice(choices)
+    result = get_result(player_choice, computer_choice)
+
+    update_game(player_choice, computer_choice, result)
+
+def update_game(player_choice, computer_choice, result):
     global player_score, computer_score
 
-    computer_choice = random.choice(choices)
-    result = ""
-
-    if player_choice == computer_choice:
-        result = "It's a Tie 😐"
-    elif (player_choice == "Rock" and computer_choice == "Scissors") or \
-         (player_choice == "Scissors" and computer_choice == "Paper") or \
-         (player_choice == "Paper" and computer_choice == "Rock"):
+    if "Win" in result and "You" in result:
         player_score += 1
-        result = "You Win 🎉"
-    else:
+    elif "Computer" in result:
         computer_score += 1
-        result = "Computer Wins 🤖"
 
-    update_ui(player_choice, computer_choice, result)
+    # Update display
+    result_label.config(text=f"{result}")
+    player_label.config(text=f"🧍 Player: {player_choice}")
+    computer_label.config(text=f"💻 Computer: {computer_choice}")
+    score_label.config(text=f"Score: You {player_score} | Computer {computer_score}")
 
-def update_ui(player_choice, computer_choice, result):
-    result_label.config(text=f"Result: {result}")
-    player_label.config(text=f"Player chose: {player_choice}")
-    computer_label.config(text=f"Computer chose: {computer_choice}")
-    score_label.config(text=f"Score - You: {player_score}  Computer: {computer_score}")
-    history.append(f"You: {player_choice} | Computer: {computer_choice} → {result}")
+    # Add to history
+    history.append(f"🧍 {player_choice} vs 💻 {computer_choice} → {result}")
     update_history()
+
+    # Enable play again
+    play_again_btn.config(state=tk.NORMAL)
 
 def update_history():
     history_text.config(state=tk.NORMAL)
     history_text.delete(1.0, tk.END)
-    for entry in history[-10:][::-1]:  # Show last 10 rounds
+    for entry in history[-10:][::-1]:  # Last 10 rounds
         history_text.insert(tk.END, entry + "\n")
     history_text.config(state=tk.DISABLED)
 
@@ -59,42 +63,55 @@ def reset_game():
     player_score = 0
     computer_score = 0
     history = []
-    result_label.config(text="Result:")
-    player_label.config(text="Player chose:")
-    computer_label.config(text="Computer chose:")
-    score_label.config(text="Score - You: 0  Computer: 0")
+    player_label.config(text="🧍 Player: -")
+    computer_label.config(text="💻 Computer: -")
+    result_label.config(text="Result: -")
+    score_label.config(text="Score: You 0 | Computer 0")
     update_history()
+    play_again_btn.config(state=tk.DISABLED)
 
-# GUI Layout
-ttk.Label(root, text="Rock Paper Scissors", font=("Helvetica", 16, "bold")).pack(pady=10)
+def play_again():
+    result_label.config(text="Result: -")
+    player_label.config(text="🧍 Player: -")
+    computer_label.config(text="💻 Computer: -")
+    play_again_btn.config(state=tk.DISABLED)
 
-score_label = ttk.Label(root, text="Score - You: 0  Computer: 0")
+# --- UI Layout ---
+ttk.Label(root, text="Rock Paper Scissors", font=("Helvetica", 18, "bold")).pack(pady=10)
+
+score_label = ttk.Label(root, text="Score: You 0 | Computer 0", font=("Helvetica", 13))
 score_label.pack(pady=5)
 
-player_label = ttk.Label(root, text="Player chose:")
+player_label = ttk.Label(root, text="🧍 Player: -", font=("Helvetica", 13))
 player_label.pack(pady=5)
 
-computer_label = ttk.Label(root, text="Computer chose:")
+computer_label = ttk.Label(root, text="💻 Computer: -", font=("Helvetica", 13))
 computer_label.pack(pady=5)
 
-result_label = ttk.Label(root, text="Result:")
-result_label.pack(pady=5)
+result_label = ttk.Label(root, text="Result: -", font=("Helvetica", 14, "bold"), foreground="blue")
+result_label.pack(pady=10)
 
 # Buttons Frame
-button_frame = ttk.Frame(root)
-button_frame.pack(pady=10)
+btn_frame = ttk.Frame(root)
+btn_frame.pack(pady=15)
 
-ttk.Button(button_frame, text="Rock 🪨", command=lambda: play("Rock")).grid(row=0, column=0, padx=5)
-ttk.Button(button_frame, text="Paper 📄", command=lambda: play("Paper")).grid(row=0, column=1, padx=5)
-ttk.Button(button_frame, text="Scissors ✂️", command=lambda: play("Scissors")).grid(row=0, column=2, padx=5)
+ttk.Button(btn_frame, text="🪨 Rock", command=lambda: play("Rock")).grid(row=0, column=0, padx=10)
+ttk.Button(btn_frame, text="📄 Paper", command=lambda: play("Paper")).grid(row=0, column=1, padx=10)
+ttk.Button(btn_frame, text="✂️ Scissors", command=lambda: play("Scissors")).grid(row=0, column=2, padx=10)
 
-# History
-ttk.Label(root, text="Game History (Last 10 Rounds):").pack(pady=10)
-history_text = tk.Text(root, height=10, width=45, state=tk.DISABLED, bg="#f0f0f0", wrap=tk.WORD)
+# Play Again & Reset
+play_again_btn = ttk.Button(root, text="🔁 Play Again", command=play_again, state=tk.DISABLED)
+play_again_btn.pack(pady=10)
+
+reset_btn = ttk.Button(root, text="🧹 Reset Game", command=reset_game)
+reset_btn.pack(pady=5)
+
+# History Label
+ttk.Label(root, text="Last 10 Rounds", font=("Helvetica", 12, "bold")).pack(pady=10)
+
+# History Text Box
+history_text = tk.Text(root, height=10, width=50, state=tk.DISABLED, wrap=tk.WORD, bg="#f5f5f5")
 history_text.pack(pady=5)
 
-# Reset Button
-ttk.Button(root, text="Reset Game 🔄", command=reset_game).pack(pady=10)
-
-# Start GUI Loop
+# Run Application
 root.mainloop()
